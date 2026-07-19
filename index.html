@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Výber klimatizácie | Spektra Shop</title>
+  <meta name="description" content="Orientačná kalkulačka výkonu klimatizácie s odporúčaním konkrétneho riešenia.">
+  <style>
+    :root{
+      --sp-red:#d51f2a;
+      --sp-dark:#17212b;
+      --sp-green:#008d82;
+      --sp-bg:#f4f6f7;
+      --sp-line:#dfe4e7;
+      --sp-muted:#65717b;
+      --sp-ok:#178245;
+      --sp-radius:18px;
+      --sp-shadow:0 12px 34px rgba(23,33,43,.10);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--sp-bg);color:var(--sp-dark);font-family:Arial,Helvetica,sans-serif}
+    button,input,select{font:inherit}
+    .sp-calc{max-width:1180px;margin:28px auto;padding:0 16px}
+    .sp-hero{
+      position:relative;overflow:hidden;border-radius:24px;padding:34px;
+      background:linear-gradient(135deg,#0d6f69,#08a196 62%,#13b3a6);
+      color:#fff;box-shadow:var(--sp-shadow)
+    }
+    .sp-hero:after{
+      content:"";position:absolute;width:320px;height:320px;border-radius:50%;
+      right:-120px;top:-150px;background:rgba(255,255,255,.10)
+    }
+    .sp-brand{font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:13px}
+    .sp-hero h1{max-width:720px;margin:10px 0 9px;font-size:clamp(28px,5vw,48px);line-height:1.04}
+    .sp-hero p{max-width:720px;margin:0;font-size:17px;line-height:1.55}
+    .sp-badges{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+    .sp-badge{padding:9px 12px;border:1px solid rgba(255,255,255,.32);border-radius:999px;background:rgba(255,255,255,.10);font-size:14px}
+    .sp-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;margin-top:22px}
+    .sp-panel{background:#fff;border:1px solid var(--sp-line);border-radius:var(--sp-radius);box-shadow:0 8px 25px rgba(23,33,43,.06)}
+    .sp-main{padding:26px}
+    .sp-side{padding:22px;height:max-content;position:sticky;top:16px}
+    .sp-stepbar{display:flex;gap:8px;margin-bottom:24px}
+    .sp-dot{height:8px;flex:1;border-radius:99px;background:#e7ebed}
+    .sp-dot.active{background:var(--sp-green)}
+    .sp-step{display:none}
+    .sp-step.active{display:block}
+    .sp-step h2{font-size:26px;margin:0 0 8px}
+    .sp-lead{color:var(--sp-muted);line-height:1.55;margin:0 0 22px}
+    .sp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .sp-field label{display:block;font-weight:700;margin:0 0 8px}
+    .sp-field small{display:block;color:var(--sp-muted);margin-top:6px;line-height:1.35}
+    .sp-field input,.sp-field select{
+      width:100%;min-height:48px;border:1px solid #cfd6da;border-radius:11px;padding:11px 12px;background:#fff;color:var(--sp-dark)
+    }
+    .sp-field input:focus,.sp-field select:focus{outline:3px solid rgba(0,141,130,.14);border-color:var(--sp-green)}
+    .sp-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .sp-option{position:relative}
+    .sp-option input{position:absolute;opacity:0;pointer-events:none}
+    .sp-option label{
+      display:block;height:100%;border:1px solid #d7dde0;border-radius:13px;padding:15px;cursor:pointer;transition:.18s;background:#fff
+    }
+    .sp-option label strong{display:block;margin-bottom:5px}
+    .sp-option label span{display:block;color:var(--sp-muted);font-size:14px;line-height:1.4}
+    .sp-option input:checked+label{border-color:var(--sp-green);box-shadow:0 0 0 3px rgba(0,141,130,.12);background:#f2fbfa}
+    .sp-nav{display:flex;justify-content:space-between;gap:12px;margin-top:25px;padding-top:20px;border-top:1px solid var(--sp-line)}
+    .sp-btn{border:0;border-radius:11px;min-height:47px;padding:11px 18px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+    .sp-btn-primary{background:var(--sp-red);color:#fff}
+    .sp-btn-primary:hover{filter:brightness(.95)}
+    .sp-btn-light{background:#edf1f2;color:var(--sp-dark)}
+    .sp-side h3{margin:0 0 16px;font-size:20px}
+    .sp-summary{display:grid;gap:12px}
+    .sp-summary-row{display:flex;justify-content:space-between;gap:16px;padding-bottom:11px;border-bottom:1px solid #edf0f1;font-size:14px}
+    .sp-summary-row span:first-child{color:var(--sp-muted)}
+    .sp-summary-row strong{text-align:right}
+    .sp-side-note{margin-top:17px;padding:13px;border-radius:12px;background:#f4f8f8;color:#40515a;font-size:13px;line-height:1.5}
+    .sp-result-head{
+      display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;
+      border-radius:16px;padding:22px;background:#f0faf8;border:1px solid #c9e8e3;margin-bottom:20px
+    }
+    .sp-result-head h2{margin:0 0 6px}
+    .sp-kw{font-size:42px;font-weight:900;color:var(--sp-green);white-space:nowrap}
+    .sp-detail{color:var(--sp-muted);line-height:1.5}
+    .sp-products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+    .sp-product{border:1px solid var(--sp-line);border-radius:15px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+    .sp-product.recommended{border:2px solid var(--sp-red);transform:translateY(-3px);box-shadow:0 12px 28px rgba(213,31,42,.12)}
+    .sp-product-top{height:132px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#f7f8f9,#e9eef0);padding:16px}
+    .sp-product-top img{max-width:100%;max-height:105px;object-fit:contain}
+    .sp-placeholder{font-size:46px;opacity:.32}
+    .sp-ribbon{display:inline-block;background:var(--sp-red);color:#fff;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:800;margin-bottom:10px}
+    .sp-product-body{padding:17px;display:flex;flex-direction:column;gap:9px;flex:1}
+    .sp-product h3{margin:0;font-size:18px;line-height:1.25}
+    .sp-product-type{color:var(--sp-green);font-weight:800;font-size:13px}
+    .sp-product-features{margin:0;padding-left:18px;color:#48545d;font-size:14px;line-height:1.55}
+    .sp-price{font-size:21px;font-weight:900;margin-top:auto}
+    .sp-mount{font-size:13px;color:var(--sp-muted)}
+    .sp-product .sp-btn{width:100%;margin-top:5px}
+    .sp-disclaimer{margin-top:18px;padding:14px;border-left:4px solid #e4a11b;background:#fff9e9;border-radius:8px;font-size:13px;line-height:1.55}
+    .sp-contact{margin-top:20px;border-radius:16px;padding:20px;background:var(--sp-dark);color:#fff}
+    .sp-contact h3{margin:0 0 7px}
+    .sp-contact p{margin:0 0 14px;color:#d6dde1}
+    .sp-contact-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .sp-contact .sp-btn-light{background:#fff}
+    .sp-error{display:none;margin:12px 0 0;color:#b42318;font-weight:700}
+    @media(max-width:900px){
+      .sp-layout{grid-template-columns:1fr}
+      .sp-side{position:static;order:-1}
+      .sp-products{grid-template-columns:1fr}
+      .sp-product.recommended{transform:none}
+    }
+    @media(max-width:600px){
+      .sp-hero,.sp-main,.sp-side{padding:20px}
+      .sp-grid,.sp-options{grid-template-columns:1fr}
+      .sp-result-head{grid-template-columns:1fr}
+      .sp-kw{font-size:36px}
+      .sp-nav .sp-btn{flex:1}
+    }
+  </style>
+</head>
+<body>
+<section class="sp-calc" id="spektraKlimaCalc">
+  <header class="sp-hero">
+    <div class="sp-brand">Spektra Shop · odborný výber</div>
+    <h1>Vyberte klimatizáciu za 60 sekúnd</h1>
+    <p>Odpovedzte na štyri jednoduché otázky. Vypočítame orientačný chladiaci výkon a ponúkneme vhodnú klimatizáciu, ktorú vieme dodať aj namontovať.</p>
+    <div class="sp-badges">
+      <span class="sp-badge">Orientačný výpočet výkonu</span>
+      <span class="sp-badge">Konkrétne modely</span>
+      <span class="sp-badge">Možnosť montáže</span>
+    </div>
+  </header>
+
+  <div class="sp-layout">
+    <main class="sp-panel sp-main">
+      <div class="sp-stepbar"><span class="sp-dot active"></span></div>
+
+      <form id="spForm" novalidate>
+        <section class="sp-step active" data-step="0">
+          <h2>Vyberte vhodný výkon klimatizácie</h2>
+          <p class="sp-lead">Stačia štyri základné údaje. Výšku stropu počítame interne ako 2,6 m.</p>
+
+          <div class="sp-grid">
+            <div class="sp-field">
+              <label for="area">Plocha miestnosti (m²)</label>
+              <input id="area" type="number" min="5" max="250" step="1" value="28" required>
+              <small>Zadajte plochu priestoru, ktorý má jednotka chladiť.</small>
+            </div>
+
+            <div class="sp-field">
+              <label for="orientation">Orientácia miestnosti</label>
+              <select id="orientation">
+                <option value="0.92">Sever</option>
+                <option value="1.00" selected>Východ</option>
+                <option value="1.08">Západ</option>
+                <option value="1.18">Juh</option>
+              </select>
+              <small>Orientácia miestnosti podľa hlavných okien. Juh a západ zvyšujú prehrievanie.</small>
+            </div>
+
+            <div class="sp-field">
+              <label for="people">Počet osôb v miestnosti</label>
+              <input id="people" type="number" min="1" max="30" step="1" value="3" required>
+              <small>Počet osôb má menší vplyv, ale pri kanceláriách a prevádzkach pomáha spresniť výpočet.</small>
+            </div>
+
+            <div class="sp-field">
+              <label for="room">Využitie miestnosti</label>
+              <select id="room">
+                <option value="1">Obývačka / bežná izba</option>
+                <option value="0.95">Spálňa</option>
+                <option value="1.08">Kancelária</option>
+                <option value="1.15">Kuchyňa</option>
+                <option value="1.12">Obchod / prevádzka</option>
+                <option value="1.22">Podkrovie</option>
+              </select>
+            </div>
+          </div>
+
+          <p id="error0" class="sp-error">Skontrolujte plochu miestnosti a počet osôb.</p>
+        </section>
+
+        <section class="sp-step" data-step="1" id="resultStep">
+          <div class="sp-result-head">
+            <div>
+              <h2>Odporúčaný výkon klimatizácie</h2>
+              <div class="sp-detail" id="resultText"></div>
+              <div class="sp-power" style="margin-top:12px;font-weight:800">
+                Orientačný elektrický príkon pri chladení:
+                <span id="resultPower">1,0 kW</span>
+              </div>
+              <div class="sp-detail" style="margin-top:5px;font-size:13px">
+                Skutočný príkon invertorovej klimatizácie sa počas prevádzky mení.
+              </div>
+            </div>
+            <div class="sp-kw" id="resultKw">3,5 kW</div>
+          </div>
+          <div class="sp-products" id="productList"></div>
+          <div class="sp-disclaimer">
+            Výsledok je orientačný. Veľké presklenie, otvorené schodisko, viac prepojených miestností, serverová technika alebo celodenné priame slnko môžu vyžadovať technickú obhliadku. Jedna nástenná jednotka nie je automaticky vhodná na rovnomerné chladenie viacerých uzatvorených miestností.
+          </div>
+          <div class="sp-contact">
+            <h3>Chcete klimatizáciu aj namontovať?</h3>
+            <p>Pošlite nám výsledok alebo si dohodnite obhliadku. Pred montážou výkon a umiestnenie preverí technik Spektra Install.</p>
+            <div class="sp-contact-actions">
+              <a class="sp-btn sp-btn-primary" id="emailOffer" href="#">Vyžiadať cenovú ponuku</a>
+              <a class="sp-btn sp-btn-light" href="tel:+421917572221">Zavolať 0917 572 221</a>
+            </div>
+          </div>
+        </section>
+
+        <div class="sp-nav" id="navButtons">
+          <button type="button" class="sp-btn sp-btn-light" id="prevBtn" style="visibility:hidden">Späť</button>
+          <button type="button" class="sp-btn sp-btn-primary" id="nextBtn">Zobraziť odporúčanie</button>
+        </div>
+      </form>
+    </main>
+
+    <aside class="sp-panel sp-side">
+      <h3>Vaše zadanie</h3>
+      <div class="sp-summary">
+        <div class="sp-summary-row"><span>Plocha miestnosti</span><strong id="sumArea">28 m²</strong></div>
+        <div class="sp-summary-row"><span>Orientácia miestnosti</span><strong id="sumOrientation">Východ</strong></div>
+        <div class="sp-summary-row"><span>Počet osôb v miestnosti</span><strong id="sumPeople">3</strong></div>
+        <div class="sp-summary-row"><span>Využitie miestnosti</span><strong id="sumRoom">Obývačka / bežná izba</strong></div>
+      </div>
+      <div class="sp-side-note"><strong>Spektra odporúča:</strong><br>Radšej správne zvolenú invertorovú jednotku než zbytočne predimenzované zariadenie s krátkymi cyklami.</div>
+    </aside>
+  </div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     PRODUKTOVÁ KONFIGURÁCIA
+     Tu neskôr nahradíme názvy, ceny, obrázky a URL presnými
+     produktmi zo Spektra Shopu. Každý výkon má 3 varianty.
+     ========================================================= */
+  // Orientačný elektrický príkon pri chladení.
+  // Nejde o presnú spotrebu konkrétneho modelu; tá závisí od účinnosti,
+  // vonkajšej teploty, nastavenej teploty a aktuálneho zaťaženia.
+  const ELECTRIC_INPUT = {
+    "2.5": 0.70,
+    "3.5": 1.00,
+    "5.0": 1.50,
+    "7.0": 2.10
+  };
+
+  const PRODUCTS = {
+    "2.5": [
+      {type:"Dobrá cena", brand:"Midea", name:"Midea 2,5 kW – základná voľba", price:"Cena podľa e-shopu", mount:"Montáž od 590 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", features:["Wi‑Fi podľa modelu","Úsporná invertorová prevádzka","Vhodná pre menšie miestnosti"]},
+      {type:"Odporúčame Spektra", brand:"Hyundai", name:"Hyundai 2,5 kW – odporúčaná zostava", price:"Cena podľa e-shopu", mount:"Montáž od 590 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", recommended:true, features:["Overená značka z našej ponuky","Dobrý pomer cena/výkon","Dodanie aj odborná montáž"]},
+      {type:"Prémiová voľba", brand:"Mitsubishi", name:"Mitsubishi 2,5 kW – tichá prémiová voľba", price:"Cena podľa e-shopu", mount:"Montáž od 590 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", features:["Nízka hlučnosť","Vysoká účinnosť","Vhodná aj do spálne"]}
+    ],
+    "3.5": [
+      {type:"Dobrá cena", brand:"Midea", name:"Midea 3,5 kW – základná voľba", price:"Cena podľa e-shopu", mount:"Montáž od 590 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", features:["Najčastejšia výkonová trieda","Wi‑Fi podľa modelu","Rozumné prevádzkové náklady"]},
+      {type:"Odporúčame Spektra", brand:"Hyundai", name:"Hyundai 3,5 kW – odporúčaná zostava", price:"Cena podľa e-shopu", mount:"Montáž od 590 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", recommended:true, features:["Overené riešenie Spektra","Dobrý pomer cena/výkon","Servis a montáž"]},
+      {type:"Prémiová voľba", brand:"Samsung", name:"Samsung WindFree 3,5 kW – komfortná voľba", price:"Cena podľa e-shopu", mount:"Montáž od 590 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", features:["Komfortné prúdenie vzduchu","Wi‑Fi ovládanie","Moderný dizajn"]}
+    ],
+    "5.0": [
+      {type:"Dobrá cena", brand:"Midea", name:"Midea 5,0 kW – výkonná základná voľba", price:"Cena podľa e-shopu", mount:"Montáž od 650 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", features:["Pre väčšie obytné priestory","Invertorová regulácia","Wi‑Fi podľa modelu"]},
+      {type:"Odporúčame Spektra", brand:"Hyundai", name:"Hyundai Revolution 5,0 kW", price:"Cena podľa e-shopu", mount:"Montáž od 650 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", recommended:true, features:["Model z ponuky Spektra Shop","Výkon približne 5,3 kW","Možnosť odbornej montáže"]},
+      {type:"Prémiová voľba", brand:"Mitsubishi", name:"Mitsubishi 5,0 kW – prémiová voľba", price:"Cena podľa e-shopu", mount:"Montáž od 650 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", features:["Vysoká účinnosť","Kultivovaná prevádzka","Spoľahlivá regulácia"]}
+    ],
+    "7.0": [
+      {type:"Dobrá cena", brand:"Midea", name:"Midea 7,0 kW – veľký otvorený priestor", price:"Cena podľa e-shopu", mount:"Montáž od 750 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", features:["Pre veľké otvorené priestory","Vysoký chladiaci výkon","Obhliadka odporúčaná"]},
+      {type:"Odporúčame Spektra", brand:"Hyundai", name:"Hyundai 7,0 kW – odporúčaná zostava", price:"Cena podľa e-shopu", mount:"Montáž od 750 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", recommended:true, features:["Dodanie a montáž Spektra","Vhodné pre väčší priestor","Technická kontrola návrhu"]},
+      {type:"Prémiová voľba", brand:"Samsung", name:"Samsung 7,0 kW – komfortná voľba", price:"Cena podľa e-shopu", mount:"Montáž od 750 €", url:"https://www.spektrashop.sk/klimatizacie/", image:"", features:["Pokročilé ovládanie","Komfortné funkcie","Moderný vzhľad"]}
+    ]
+  };
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  let step = 0;
+  let lastResult = null;
+
+  const labels = {
+    orientation: {"0.92":"Sever","1":"Východ","1.08":"Západ","1.18":"Juh"}
+  };
+
+  function skNum(n,d=1){ return Number(n).toLocaleString("sk-SK",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+
+  function updateSummary(){
+    $("#sumArea").textContent = ($("#area").value || "–") + " m²";
+    $("#sumOrientation").textContent = labels.orientation[$("#orientation").value];
+    $("#sumPeople").textContent = $("#people").value || "–";
+    $("#sumRoom").textContent = $("#room").options[$("#room").selectedIndex].text;
+  }
+
+  function validFirst(){
+    const area=+$("#area").value, people=+$("#people").value;
+    const ok=area>=5 && area<=250 && people>=1 && people<=30;
+    $("#error0").style.display=ok?"none":"block";
+    return ok;
+  }
+
+  function calculate(){
+    const area=+$("#area").value;
+    const people=+$("#people").value;
+    const orientation=+$("#orientation").value;
+    const room=+$("#room").value;
+    const height=2.6;
+
+    // Základ: 55 W/m² pri internej výške stropu 2,6 m.
+    // Korekcia orientácie okien, typu priestoru a osôb nad prvú osobu.
+    const peopleGain=Math.max(0,people-1)*100;
+    let watts=(area*55*orientation*room)+peopleGain;
+
+    // Prevádzková rezerva 12 %.
+    watts*=1.12;
+    const needKw=watts/1000;
+
+    let nominal, multi=false;
+    if(needKw<=2.20) nominal=2.5;
+    else if(needKw<=3.15) nominal=3.5;
+    else if(needKw<=4.55) nominal=5.0;
+    else if(needKw<=6.30) nominal=7.0;
+    else { nominal=7.0; multi=true; }
+
+    return {area,height,people,orientation,room,needKw,nominal,multi,use:"cool"};
+  }
+
+  function orderProducts(products,use){
+    const copy=[...products];
+    if(use==="price") return copy.sort((a,b)=>a.type==="Dobrá cena"?-1:b.type==="Dobrá cena"?1:0);
+    if(use==="quiet") return copy.sort((a,b)=>(a.brand==="Mitsubishi"||a.brand==="Samsung")?-1:(b.brand==="Mitsubishi"||b.brand==="Samsung")?1:0);
+    return copy.sort((a,b)=>b.recommended-a.recommended);
+  }
+
+  function renderProducts(res){
+    const key=res.nominal.toFixed(1);
+    const products=orderProducts(PRODUCTS[key],res.use);
+    $("#productList").innerHTML=products.map(p=>`
+      <article class="sp-product ${p.recommended?"recommended":""}">
+        <div class="sp-product-top">
+          ${p.image?`<img src="${p.image}" alt="${p.name}" loading="lazy">`:`<div class="sp-placeholder" aria-hidden="true">❄</div>`}
+        </div>
+        <div class="sp-product-body">
+          ${p.recommended?`<div><span class="sp-ribbon">Odporúčame Spektra</span></div>`:""}
+          <div class="sp-product-type">${p.type} · ${p.brand}</div>
+          <h3>${p.name}</h3>
+          <ul class="sp-product-features">${p.features.map(f=>`<li>${f}</li>`).join("")}</ul>
+          <div class="sp-price">${p.price}</div>
+          <div class="sp-mount">${p.mount}</div>
+          <a class="sp-btn ${p.recommended?"sp-btn-primary":"sp-btn-light"}" href="${p.url}">Pozrieť produkt</a>
+        </div>
+      </article>`).join("");
+  }
+
+  function renderResult(){
+    const r=calculate(); lastResult=r;
+    $("#resultKw").textContent=skNum(r.nominal)+" kW";
+    $("#resultPower").textContent=skNum(ELECTRIC_INPUT[r.nominal.toFixed(1)])+" kW";
+    const extra=r.multi
+      ? "Vypočítaná potreba je približne "+skNum(r.needKw)+" kW. Pri tomto výsledku odporúčame obhliadku a zváženie multisplitu alebo viacerých jednotiek."
+      : "Vypočítaná potreba je približne "+skNum(r.needKw)+" kW. Najbližšia vhodná štandardná výkonová trieda je "+skNum(r.nominal)+" kW.";
+    $("#resultText").textContent=extra;
+    renderProducts(r);
+
+    const subject=encodeURIComponent("Dopyt na klimatizáciu – výsledok kalkulačky");
+    const body=encodeURIComponent(
+      "Dobrý deň,\n\nmám záujem o cenovú ponuku na klimatizáciu.\n"+
+      "Plocha: "+r.area+" m²\nOrientácia miestnosti: "+labels.orientation[String(r.orientation)]+"\nPočet osôb v miestnosti: "+r.people+
+      "\nVyužitie miestnosti: "+$("#room").options[$("#room").selectedIndex].text+
+      "\nVypočítaná potreba: "+skNum(r.needKw)+" kW"+
+      "\nOdporúčaný výkon: "+skNum(r.nominal)+" kW"+
+      "\nOrientačný elektrický príkon: "+skNum(ELECTRIC_INPUT[r.nominal.toFixed(1)])+" kW\n\n"+
+      "Prosím o kontaktovanie.\n"
+    );
+    $("#emailOffer").href="mailto:spektrashop@spektrashop.sk?subject="+subject+"&body="+body;
+  }
+
+  function showStep(){
+    $$(".sp-step").forEach((el,i)=>el.classList.toggle("active",i===step));
+    $$(".sp-dot").forEach(el=>el.classList.add("active"));
+    $("#prevBtn").style.visibility=step===0?"hidden":"visible";
+    $("#nextBtn").textContent="Zobraziť odporúčanie";
+    if(step===1){
+      $("#navButtons").style.display="none";
+      renderResult();
+    } else {
+      $("#navButtons").style.display="flex";
+    }
+    updateSummary();
+    document.getElementById("spektraKlimaCalc").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  $("#nextBtn").addEventListener("click",()=>{
+    if(!validFirst()) return;
+    step=1;
+    showStep();
+  });
+  $("#prevBtn").addEventListener("click",()=>{step=0;showStep();});
+  $("#spForm").addEventListener("input",updateSummary);
+  $("#spForm").addEventListener("change",updateSummary);
+  updateSummary();
+})();
+</script>
+</body>
+</html>
