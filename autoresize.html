@@ -3,58 +3,184 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Výber klimatizácie | Spektra Shop</title>
+
 <style>
-html,body{margin:0;padding:0;background:transparent;overflow:hidden}
-#app{display:block;width:100%;height:700px;border:0;overflow:hidden;background:transparent}
+html,
+body{
+    margin:0;
+    padding:0;
+    background:transparent;
+    overflow:hidden;
+}
+
+#app{
+    display:block;
+    width:100%;
+    height:700px;
+    border:0;
+    overflow:hidden;
+    background:transparent;
+}
 </style>
 </head>
+
 <body>
-<iframe id="app" src="./index.html" title="Výber klimatizácie Spektra Shop" scrolling="no"></iframe>
+
+<iframe
+    id="app"
+    title="Výber klimatizácie Spektra Shop"
+    scrolling="no">
+</iframe>
+
 <script>
 (function(){
-  var frame=document.getElementById('app');
-  var lastHeight=0;
 
-  function measure(){
-    try{
-      var doc=frame.contentDocument||frame.contentWindow.document;
-      if(!doc)return;
-      var h=Math.max(
-        doc.documentElement?doc.documentElement.scrollHeight:0,
-        doc.body?doc.body.scrollHeight:0
-      );
-      if(!h)return;
-      h=Math.max(500,Math.min(h+12,2400));
-      if(Math.abs(h-lastHeight)>2){
-        lastHeight=h;
-        frame.style.height=h+'px';
-        document.documentElement.style.height=h+'px';
-        document.body.style.height=h+'px';
-        parent.postMessage({type:'spektra-klima-height',height:h},'*');
-      }
-    }catch(e){}
-  }
+    var frame=document.getElementById('app');
+    var lastHeight=0;
 
-  frame.addEventListener('load',function(){
-    setTimeout(measure,100);
-    setTimeout(measure,500);
-    setTimeout(measure,1200);
-    try{
-      var doc=frame.contentDocument||frame.contentWindow.document;
-      if('ResizeObserver' in window&&doc&&doc.documentElement){
-        new ResizeObserver(measure).observe(doc.documentElement);
-      }
-      if(doc){
-        doc.addEventListener('click',function(){setTimeout(measure,120);setTimeout(measure,500)});
-        doc.addEventListener('change',function(){setTimeout(measure,120)});
-      }
-    }catch(e){}
-  });
+    /*
+     * Prenesieme parametre z URL do index.html.
+     *
+     * napr.:
+     * ?plocha=35&orientacia=juh&osoby=3&vyuzitie=oboje
+     */
+    frame.src='./index.html'+window.location.search;
 
-  window.addEventListener('resize',function(){setTimeout(measure,100)});
-  setInterval(measure,800);
+
+    function measure(){
+
+        try{
+
+            var doc=
+                frame.contentDocument ||
+                frame.contentWindow.document;
+
+            if(!doc){
+                return;
+            }
+
+            var h=Math.max(
+
+                doc.documentElement
+                    ? doc.documentElement.scrollHeight
+                    : 0,
+
+                doc.body
+                    ? doc.body.scrollHeight
+                    : 0
+            );
+
+            if(!h){
+                return;
+            }
+
+            h=Math.max(
+                500,
+                Math.min(h+12,2400)
+            );
+
+
+            if(Math.abs(h-lastHeight)>2){
+
+                lastHeight=h;
+
+                frame.style.height=h+'px';
+
+                document.documentElement.style.height=h+'px';
+                document.body.style.height=h+'px';
+
+
+                parent.postMessage(
+                    {
+                        type:'spektra-klima-height',
+                        height:h
+                    },
+                    '*'
+                );
+
+            }
+
+        }
+        catch(e){}
+
+    }
+
+
+    frame.addEventListener(
+        'load',
+        function(){
+
+            setTimeout(measure,100);
+            setTimeout(measure,500);
+            setTimeout(measure,1200);
+
+
+            try{
+
+                var doc=
+                    frame.contentDocument ||
+                    frame.contentWindow.document;
+
+
+                if(
+                    'ResizeObserver' in window &&
+                    doc &&
+                    doc.documentElement
+                ){
+
+                    new ResizeObserver(measure)
+                        .observe(doc.documentElement);
+
+                }
+
+
+                if(doc){
+
+                    doc.addEventListener(
+                        'click',
+                        function(){
+
+                            setTimeout(measure,120);
+                            setTimeout(measure,500);
+
+                        }
+                    );
+
+
+                    doc.addEventListener(
+                        'change',
+                        function(){
+
+                            setTimeout(measure,120);
+
+                        }
+                    );
+
+                }
+
+            }
+            catch(e){}
+
+        }
+    );
+
+
+    window.addEventListener(
+        'resize',
+        function(){
+
+            setTimeout(measure,100);
+
+        }
+    );
+
+
+    setInterval(measure,800);
+
 })();
 </script>
+
 </body>
 </html>
